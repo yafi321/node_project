@@ -21,6 +21,6 @@ app.use("/api/user", userRouter)
 app.use("/api/order", orderRouter)
 
 let port = process.env.PORT;
-app.listen(port, "localhost",()=>{
+app.listen(port, '0.0.0.0',()=>{
     console.log("app is runinig in port: "+port)
 })
