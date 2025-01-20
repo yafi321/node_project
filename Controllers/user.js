@@ -1,4 +1,4 @@
-import {userModel } from "../Models/user.js"
+import { userModel } from "../Models/user.js"
 
 export const getAllusers = async (req, res) => {
 
@@ -19,6 +19,8 @@ export const getById = async (req, res) => {
         let data = await userModel.findById(id);
         if (!data)
             return res.status(404).json({ title: "error canot get user by id", message: "not parameter from this id" });
+        
+        delete data.password 
         res.json(data);
     }
     catch (err) {
@@ -34,7 +36,10 @@ export const updateById = async (req, res) => {
     if (!req.body.userName && !req.body.email)//שדות חובה
         return res.status(404).json({ title: "missing detailes", message: "worng data" });
 
-    if(req.body.password){//עדכון המשתמש חוץ מסיסמא
+    if ((req.body.userName && req.body.userName.length < 2 )||(req.body.email && !isValidEmail(req.body.email)) )//בדיקות תקינות
+        return res.status(404).json({ title: "wornge userName or email", message: "missing data" });
+
+    if (req.body.password) {//עדכון המשתמש חוץ מסיסמא
         delete req.body.password;
     }
     try {
@@ -55,7 +60,7 @@ export const updatePasswordById = async (req, res) => {
     if (!req.body.password)//בדיקת שדה חובה
         return res.status(404).json({ title: "missing password", message: "worng data" });
 
-    if(req.body.password.length<5)//בדיקת תקינות
+    if (req.body.password.length < 5)//בדיקת תקינות
         return res.status(404).json({ title: "wornge password", message: "missing data" });
 
     try {
@@ -81,17 +86,17 @@ export const updatePasswordById = async (req, res) => {
         res.json(data);
     }
     catch (err) {
-        console.log("err "+err.message);
+        console.log("err " + err.message);
         res.status(400).json({ title: "error canot update password by id", message: "something worng" });
     }
 }
 
 export const addUser = async (req, res) => {
-    if (!req.body.userName || !req.body.password)//שדות חובה
-        return res.status(404).json({ title: "missing userName or password", message: "missing data" });
+    if (!req.body.userName || !req.body.password || !req.body.email)//שדות חובה
+        return res.status(404).json({ title: "missing userName or password or email", message: "missing data" });
 
     const isUsed = await chackPassword(req.body.password);//בדיקת הסיסמא אם לא קיימת
-    
+
     if (isUsed) {
         return res.status(400).json({
             title: "password in use",
@@ -99,11 +104,13 @@ export const addUser = async (req, res) => {
         });
     }
 
-    if (req.body.userName.length < 2 || req.body.password.length < 5)//בדיקות תקינות
-        return res.status(404).json({ title: "wornge userName or password", message: "missing data" });
+    if (req.body.userName.length < 2 || req.body.password.length < 5 || !isValidEmail(req.body.email))//בדיקות תקינות
+        return res.status(404).json({ title: "wornge userName or password or email", message: "missing data" });
 
     try {
         let newUser = new userModel(req.body);
+        newUser.role ="USER"
+        newUser.RegistratioDate = new Date();
         let data = await newUser.save();
         res.json(data);
 
@@ -120,9 +127,9 @@ export const loginUser = async (req, res) => {
 
     // בדיקה אם שם משתמש וסיסמה נשלחו בבקשה
     if (!userName || !password) {
-        return res.status(400).json({ 
-            title: "missing credentials", 
-            message: "username and password are required" 
+        return res.status(400).json({
+            title: "missing credentials",
+            message: "username and password are required"
         });
     }
 
@@ -130,9 +137,9 @@ export const loginUser = async (req, res) => {
         // חיפוש המשתמש לפי שם משתמש וסיסמה
         const user = await userModel.findOne({ userName, password });
         if (!user) {
-            return res.status(404).json({ 
-                title: "login failed", 
-                message: "invalid userName or password" 
+            return res.status(404).json({
+                title: "login failed",
+                message: "invalid userName or password"
             });
         }
 
@@ -144,23 +151,23 @@ export const loginUser = async (req, res) => {
                 id: user._id,
                 username: user.userName,
                 email: user.email,
-               
+
             },
         });
     } catch (err) {
         console.error("Error during login:", err);
-        res.status(500).json({ 
-            title: "error logging in", 
-            message: "something went wrong" 
+        res.status(500).json({
+            title: "error logging in",
+            message: "something went wrong"
         });
     }
 };
 
-export const chackPassword = async (newPassword)=>{//פונקציית עזר  לבדיקת סיסמא אם לא קיימת כבר במערכת
+export const chackPassword = async (newPassword) => {//פונקציית עזר  לבדיקת סיסמא אם לא קיימת כבר במערכת
     try {
         // חפש משתמש עם הסיסמה החדשה
         const user = await userModel.findOne({ password: newPassword });
-        
+
         // אם נמצא משתמש עם אותה סיסמה, החזר true
         return user !== null;
     } catch (err) {
@@ -168,5 +175,8 @@ export const chackPassword = async (newPassword)=>{//פונקציית עזר  ל
     }
 
 }
-
+function isValidEmail(email) {//בדיקת תקינות למייל
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
 

@@ -44,11 +44,13 @@ export const updateById = async (req, res) => {
     let { id } = req.params;
 
     if (!Object.keys(req.body).length) {//בדיקה שיש שדה כלשהוא בBODY לעדכון
-        return res.status(400).json({
+        return res.status(404).json({
             title: "Missing details",
             message: "At least one field is required to update",
         });
     }
+    if ((req.body.name&&req.body.name.length < 2 )|| (req.body.price &&req.body.price < 1))//בדיקות תקינות
+    return res.status(404).json({ title: "wornge name or price", message: "missing data" });
 
     try {
         let data = await productModel.findByIdAndUpdate(id,
