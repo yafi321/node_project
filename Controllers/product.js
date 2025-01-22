@@ -67,8 +67,8 @@ export const updateById = async (req, res) => {
 }
 
 export const add = async (req, res) => {
-    if (!req.body.name || !req.body.price||!req.body.stock||!req.body.description||!req.body.ProductioDate||!req.body.url||!req.body.colors)//שדות חובה
-        return res.status(404).json({ title: "missing data", message: "missing name or price or stock or description or ProductioDate or url or colors" });
+    if (!req.body.name || !req.body.price||!req.body.description||!req.body.ProductioDate||!req.body.url||!req.body.colors)//שדות חובה
+        return res.status(404).json({ title: "missing data", message: "missing name or price or description or ProductioDate or url or colors" });
     if (req.body.name.length < 2 || req.body.price <= 0)//בדיקות תקינות
         return res.status(404).json({ title: "wornge name or price", message: "missing data" });
     try {
