@@ -149,8 +149,9 @@ export const loginUser = async (req, res) => {
             message: "user authenticated successfully",
             user: {
                 id: user._id,
-                username: user.userName,
+                userName: user.userName,
                 email: user.email,
+                role: user.role
 
             },
         });
