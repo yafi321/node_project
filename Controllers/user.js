@@ -1,6 +1,7 @@
 import { userModel } from "../Models/user.js"
 import { generateToken } from "../utils/jwt.js";
 
+
 export const getAllusers = async (req, res) => {
 
     try {
@@ -143,9 +144,6 @@ export const loginUser = async (req, res) => {
                 message: "invalid userName or password"
             });
         }
-
-   
-        
        
                 let { password: aa, ...other } = user;
                 other.token = generateToken(user)
@@ -154,17 +152,17 @@ export const loginUser = async (req, res) => {
 
 
         // אם נמצא משתמש, מחזירים את פרטיו
-        res.json({
-            title: "login successful",
-            message: "user authenticated successfully",
-            user: {
-                id: user._id,
-                userName: user.userName,
-                email: user.email,
-                role: user.role
+        // res.json({
+        //     title: "login successful",
+        //     message: "user authenticated successfully",
+        //     user: {
+        //         id: user._id,
+        //         userName: user.userName,
+        //         email: user.email,
+        //         role: user.role
 
-            },
-        });
+        //     },
+        // });
     } catch (err) {
         console.error("Error during login:", err);
         res.status(500).json({
