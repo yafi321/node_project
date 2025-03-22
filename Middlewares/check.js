@@ -1,4 +1,6 @@
 import jwt from "jsonwebtoken"
+import dotenv from "dotenv";
+dotenv.config();
 
 export function check(req, res, next) {
     let token = req.headers.authorization;
@@ -6,7 +8,7 @@ export function check(req, res, next) {
         return res.status(401).json({ title: "user unauthorized", messgae: "ראשית בצע כניסה" })
     try {
 
-        let result = jwt.verify(token, proccess.env.SECRET_KEY);
+        let result = jwt.verify(token, process.env.SECRET_KEY);
         req.user = result;
         next()
     }
