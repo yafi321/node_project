@@ -135,13 +135,22 @@ export const loginUser = async (req, res) => {
 
     try {
         // חיפוש המשתמש לפי שם משתמש וסיסמה
-        const user = await userModel.findOne({ userName, password });
+        let user = await userModel.findOne({ userName, password }).lean();
         if (!user) {
             return res.status(404).json({
                 title: "login failed",
                 message: "invalid userName or password"
             });
         }
+
+   
+        
+       
+                let { password: aa, ...other } = user;
+                other.token = generateToken(user)
+                res.json(other)
+
+
 
         // אם נמצא משתמש, מחזירים את פרטיו
         res.json({

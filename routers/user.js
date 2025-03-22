@@ -3,6 +3,7 @@ import {getAllusers, getById, addUser, loginUser, updateById,updatePasswordById
 } from "../Controllers/user.js"
 
 
+
 const userRouter = Router();
 userRouter.get("/", getAllusers);
 userRouter.get("/:id", getById);
