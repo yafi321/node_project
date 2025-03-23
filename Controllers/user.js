@@ -49,9 +49,8 @@ export const updateById = async (req, res) => {
         if (!data)
             return res.status(404).json({ title: "Error: Cannot update", message: "No user found with this ID" });
 
-        res.json({ message: "User updated successfully", data });
+        res.json(data);
     } catch (err) {
-        console.error("Error updating user:", err);
         res.status(500).json({ title: "Server error", message: "Something went wrong" });
     }
 };
