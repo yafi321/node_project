@@ -20,7 +20,7 @@ export const getById = async (req, res) => {
     try {
         let data = await userModel.findById(id);
         if (!data)
-            return res.status(404).json({ title: "error canot get user by id", message: "not parameter from this id" });
+            return res.status(404).json({ title: "error canot get user by id", message: "not parameter from this id" }).lean();
         
         delete data.password 
         res.json(data);
@@ -31,30 +31,30 @@ export const getById = async (req, res) => {
     }
 }
 
-
 export const updateById = async (req, res) => {
     let { id } = req.params;
 
-    if (!req.body.userName && !req.body.email)//שדות חובה
-        return res.status(404).json({ title: "missing detailes", message: "worng data" });
+    if (!req.body.userName && !req.body.email) // בדיקת חובה
+        return res.status(400).json({ title: "Missing details", message: "Wrong data" });
 
-    if ((req.body.userName && req.body.userName.length < 2 )||(req.body.email && !isValidEmail(req.body.email)) )//בדיקות תקינות
-        return res.status(404).json({ title: "wornge userName or email", message: "missing data" });
+    if ((req.body.userName && req.body.userName.length < 2) || (req.body.email && !isValidEmail(req.body.email))) // בדיקות תקינות
+        return res.status(400).json({ title: "Invalid userName or email", message: "Invalid data" });
 
-    if (req.body.password) {//עדכון המשתמש חוץ מסיסמא
-        delete req.body.password;
-    }
+    // הסרת סיסמה מהעדכון
+    const updatedData = { ...req.body };
+    delete updatedData.password;
+
     try {
-        let data = await userModel.findByIdAndUpdate(id);
+        let data = await userModel.findByIdAndUpdate(id, updatedData, { new: true, runValidators: true });
         if (!data)
-            return res.status(404).json({ title: "error canot update by id", message: "not parameter from this id" });
-        res.json(data);
+            return res.status(404).json({ title: "Error: Cannot update", message: "No user found with this ID" });
+
+        res.json({ message: "User updated successfully", data });
+    } catch (err) {
+        console.error("Error updating user:", err);
+        res.status(500).json({ title: "Server error", message: "Something went wrong" });
     }
-    catch (err) {
-        console.log("err");
-        res.status(400).json({ title: "error canot update by id", message: "something worng" });
-    }
-}
+};
 
 export const updatePasswordById = async (req, res) => {
     let { id } = req.params;
@@ -111,7 +111,8 @@ export const addUser = async (req, res) => {
 
     try {
         let newUser = new userModel(req.body);
-        newUser.role ="USER"
+        if(!req.body.role)
+            newUser.role ="USER"
         newUser.RegistratioDate = new Date();
         let data = await newUser.save();
         res.json(data);

@@ -23,7 +23,7 @@ export function checkManager(req, res, next) {
         return res.status(401).json({ title: "user unauthorized", messgae: "ראשית בצע כניסה" })
     try {
 
-        let result = jwt.verify(token, proccess.env.SECRET_KEY);
+        let result = jwt.verify(token, process.env.SECRET_KEY);
         req.user = result;
         if (result.role == "MANAGER")
             next()
