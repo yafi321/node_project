@@ -24,10 +24,9 @@ export function checkManager(req, res, next) {
     try {
 
         let result = jwt.verify(token, process.env.SECRET_KEY);
-        console.log(result)
         req.user = result;
         if (result.role == "MANAGER")
-            next()
+            return next()
         return res.status(403).json({ title: "user unauthorized", message: "אין לך הרשאה" })
     }
     catch (err) {
