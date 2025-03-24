@@ -45,46 +45,63 @@ export const deleteById = async (req, res) => {
 export const updateById = async (req, res) => {
     let { id } = req.params;
 
-    if (!Object.keys(req.body).length) {//בדיקה שיש שדה כלשהוא בBODY לעדכון
+    if (!Object.keys(req.body).length && !req.file) { // בדיקה אם יש שדה ב-req.body או תמונה ב-req.file
         return res.status(404).json({
             title: "Missing details",
-            message: "At least one field is required to update",
+            message: "At least one field or image is required to update",
         });
     }
-    if ((req.body.name&&req.body.name.length < 2 )|| (req.body.price &&req.body.price < 1))//בדיקות תקינות
-    return res.status(404).json({ title: "wornge name or price", message: "missing data" });
+
+    if ((req.body.name && req.body.name.length < 2) || (req.body.price && req.body.price < 1)) { // בדיקות תקינות
+        return res.status(404).json({ title: "wrong name or price", message: "Missing or invalid data" });
+    }
 
     try {
-        let data = await productModel.findByIdAndUpdate(id,
-            req.body, 
-            { new: true }) ;
-        if (!data)
-            return res.status(404).json({ title: "error canot update by id", message: "not parameter from this id" });
+        // אם הועלתה תמונה חדשה, נוסיף את ה-URL שלה
+        if (req.file) {
+            req.body.url = req.file.originalname;
+        }
+
+        let data = await productModel.findByIdAndUpdate(id, req.body, { new: true });
+
+        if (!data) {
+            return res.status(404).json({ title: "Error", message: "No product found with this ID" });
+        }
+
         res.json(data);
+    } catch (err) {
+        console.log(err);
+        res.status(400).json({ title: "Error", message: "Something went wrong" });
     }
-    catch (err) {
-        console.log("err");
-        res.status(400).json({ title: "error canot update by id", message: "something worng" });
-    }
-}
+};
 
 export const add = async (req, res) => {
-    if (!req.body.name || !req.body.price||!req.body.description||!req.body.ProductioDate||!req.body.url||!req.body.colors)//שדות חובה
-        return res.status(404).json({ title: "missing data", message: "missing name or price or description or ProductioDate or url or colors" });
-    if (req.body.name.length < 2 || req.body.price <= 0)//בדיקות תקינות
-        return res.status(404).json({ title: "wornge name or price", message: "missing data" });
     try {
-        let newProde = new productModel(req.body);
-        let data = await newProde.save();
+        let originalFileName = req.file?.originalname; // שם הקובץ שהועלה
+
+        if (!req.body.name || !req.body.price || !req.body.description || !req.body.ProductioDate || !req.body.colors) {
+            return res.status(400).json({ title: "missing data", message: "Missing required fields" });
+        }
+
+        if (req.body.name.length < 2 || req.body.price <= 0) {
+            return res.status(400).json({ title: "Invalid name or price", message: "Check input values" });
+        }
+
+        // יצירת המוצר ושמירת ה-URL החדש של התמונה
+        let newProduct = new productModel({
+            ...req.body,
+            url: originalFileName // הוספת שם הקובץ לשדה ה-URL
+        });
+
+        let data = await newProduct.save();
         res.json(data);
 
     } catch (err) {
-        console.log("err");
-        res.status(400).json({ title: "error canot add by id", message: "something worng" });
+        console.error("Error adding product:", err);
+        res.status(500).json({ title: "Error", message: "Something went wrong" });
     }
+};
 
-
-}
 
 
 export const getTotalPages = async (req, res)=>{
