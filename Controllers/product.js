@@ -59,7 +59,7 @@ export const updateById = async (req, res) => {
     try {
         // אם הועלתה תמונה חדשה, נוסיף את ה-URL שלה
         if (req.file) {
-            req.body.url = req.file.originalname;
+            req.body.url ="/staticFile/images/"+ req.file.originalname;
         }
 
         let data = await productModel.findByIdAndUpdate(id, req.body, { new: true });
@@ -90,7 +90,7 @@ export const add = async (req, res) => {
         // יצירת המוצר ושמירת ה-URL החדש של התמונה
         let newProduct = new productModel({
             ...req.body,
-            url: originalFileName // הוספת שם הקובץ לשדה ה-URL
+            url: "/staticFile/images/"+originalFileName // הוספת שם הקובץ לשדה ה-URL
         });
 
         let data = await newProduct.save();
