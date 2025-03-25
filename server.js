@@ -15,7 +15,7 @@ app.use(cors());
 
 app.use(express.json());
 
-app.use(express.static('staticFile/images'))
+app.use('/staticFile', express.static('staticFile'));
 
 
 app.use("/api/furniture", productRouter)

@@ -59,9 +59,10 @@ export const updateById = async (req, res) => {
     try {
         // אם הועלתה תמונה חדשה, נוסיף את ה-URL שלה
         if (req.file) {
-            req.body.url ="/staticFile/images/"+ req.file.originalname;
+            let originalFileName = req.file?.originalname
+            req.body.url ="/staticFile/images/"+ originalFileName;
         }
-
+        
         let data = await productModel.findByIdAndUpdate(id, req.body, { new: true });
 
         if (!data) {
